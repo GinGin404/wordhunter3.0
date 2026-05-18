@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordHunter · AI英语单词学习工具（最终版）</title>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            background: linear-gradient(135deg, #0f2b3d 0%, #1a3a2e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        .app-container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(4px);
+            border-radius: 48px;
+            padding: 24px 28px 32px;
+            box-shadow: 0 25px 40px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,215,150,0.3);
+        }
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            margin: 0 0 4px;
+            background: linear-gradient(145deg, #FFE6B0, #FFB347);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .sub {
+            text-align: center;
+            color: #b8d0dc;
+            font-size: 0.8rem;
+            margin-bottom: 20px;
+        }
+        .teacher-zone {
+            background: #1e3a2faa;
+            border-radius: 32px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ffd58c;
+        }
+        .teacher-zone label {
+            font-weight: 600;
+            color: #ffeaac;
+            font-size: 0.9rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .word-bank-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 28px;
+            border: none;
+            background: #fef5e3;
+            font-family: monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+            margin-bottom: 12px;
+        }
+        .format-hint {
+            font-size: 0.7rem;
+            color: #ffd966;
+            margin-top: -8px;
+            margin-bottom: 10px;
+        }
+        .btn-secondary {
+            background: #ffb347;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.1s;
+            margin-right: 8px;
+            margin-bottom: 6px;
+        }
+        .mode-switch {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .mode-btn {
+            background: #2c4b3e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 60px;
+            font-weight: bold;
+            color: #e9f5e1;
+            cursor: pointer;
+            transition: 0.1s;
+            flex: 1;
+            min-width: 100px;
+        }
+        .mode-btn.active {
+            background: #ff9f4a;
+            color: #1e2a1c;
+            box-shadow: 0 2px 8px gold;
+        }
+        .quiz-card {
+            background: #fef9ef;
+            border-radius: 48px;
+            padding: 24px 20px 30px;
+            text-align: center;
+        }
+        .current-word {
+            font-size: 3rem;
+            font-weight: 800;
+            background: #2c3e2f;
+            display: inline-block;
+            padding: 16px 32px;
+            border-radius: 70px;
+            color: #fff2cf;
+            margin: 10px 0;
+            word-break: keep-all;
+            white-space: normal;
+            max-width: 100%;
+        }
+        .phonetic {
+            font-size: 1rem;
+            color: #5a6e5a;
+            background: #eaeed5;
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 50px;
+            margin: 5px 0;
+        }
+        .part-of-speech {
+            font-size: 0.9rem;
+            color: #8b6b3d;
+            background: #f5e6c4;
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 50px;
+            margin: 5px 8px;
+        }
+        .meaning-cn {
+            font-size: 1.1rem;
+            font-weight: 500;
+            background: #e0d6b0;
+            display: inline-block;
+            padding: 6px 20px;
+            border-radius: 80px;
+            margin: 8px 0;
+        }
+        .audio-row {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        .audio-btn {
+            background: #487a6b;
+            border: none;
+            padding: 10px 32px;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.1s;
+        }
+        .audio-btn:active { transform: scale(0.96); }
+        .audio-btn:disabled { opacity: 0.6; cursor: wait; }
+        .mic-area { margin: 20px 0; }
+        .mic-main-btn {
+            background: #4c7a8a;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+        }
+        .mic-main-btn.listening { background: #e67e22; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .feedback {
+            background: #1e2a2f;
+            padding: 10px;
+            border-radius: 60px;
+            margin: 15px 0;
+            color: #ffe1a0;
+        }
+        .options-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 25px 0;
+        }
+        .opt-item {
+            background: #eef2f7;
+            padding: 12px;
+            border-radius: 100px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .opt-item:active { transform: scale(0.97); }
+        .opt-item.disabled { cursor: not-allowed; opacity: 0.8; }
+        .opt-item.correct-highlight { background: #a5d6a5; border: 2px solid #2e7d32; }
+        .opt-item.wrong-highlight { background: #ef9a9a; border: 2px solid #c62828; }
+        .opt-mark { font-size: 1.2rem; font-weight: bold; }
+        .opt-mark.correct { color: #2e7d32; }
+        .opt-mark.wrong { color: #c62828; }
+        .next-word-btn {
+            background: #3cac6e;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            margin-top: 15px;
+            cursor: pointer;
+            width: 80%;
+        }
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            background: #00000055;
+            border-radius: 40px;
+            padding: 8px 16px;
+            color: #ffeaac;
+            font-weight: bold;
+        }
+        .wrong-words-panel {
+            margin-top: 20px;
+            background: #2d3b2f;
+            border-radius: 32px;
+            padding: 16px;
+            text-align: left;
+        }
+        .wrong-words-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #ffb347;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .wrong-words-list {
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+        }
+        .wrong-word-item {
+            background: #1e2a2f;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #ffe1a0;
+        }
+        .copy-btn {
+            background: #487a6b;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        .copy-btn:hover { background: #5c8d7c; }
+        footer {
+            font-size: 0.65rem;
+            text-align: center;
+            margin-top: 18px;
+            color: #95b7c7;
+        }
+        .hidden { display: none; }
+        .pronounce-wrong-hint {
+            margin-top: 10px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <h1>🎤 WordHunter · AI三模式</h1>
+    <div class="sub">跟读 · 发音闭环 · 词义闭环 | 专业英音</div>
+
+    <div class="teacher-zone">
+        <label>📖 老师：输入单词库（格式：单词/词组 音标 词性 中文）</label>
+        <textarea id="wordBankArea" rows="3" class="word-bank-input" placeholder="例：
+analyze /'ænəlaɪz/ v. 分析
+pick up /pɪk ʌp/ v. 捡起；学会
+look forward to /lʊk 'fɔːwəd tuː/ v. 期待"></textarea>
+        <div class="format-hint">💡 词组中的空格不会影响解析</div>
+        <button id="syncBankBtn" class="btn-secondary">✨ 加载词库</button>
+        <span id="wordCountSpan" style="margin-left: 12px;color:#ffea9e;">📚 0词</span>
+    </div>
+
+    <div class="mode-switch">
+        <button data-mode="listen" class="mode-btn active">🎧 跟读模式</button>
+        <button data-mode="pronounce" class="mode-btn">🎙️ 发音模式</button>
+        <button data-mode="meaning" class="mode-btn">📝 词义模式</button>
+    </div>
+
+    <div class="quiz-card">
+        <div class="current-word" id="displayWord">---</div>
+        <div id="phoneticZone" class="phonetic"></div>
+        <div id="posZone" class="part-of-speech"></div>
+        <div id="meaningZone" class="meaning-cn"></div>
+
+        <div id="listenAudioPanel">
+            <div class="audio-row">
+                <button id="ukVoiceBtn" class="audio-btn">🇬🇧 英音跟读</button>
+            </div>
+            <div id="audioStatus" class="feedback" style="background:#2d4a3a;"></div>
+        </div>
+
+        <div id="pronouncePanel" class="hidden">
+            <div class="mic-area">
+                <button id="startMicBtn" class="mic-main-btn">🎙️ 朗读测试发音</button>
+                <div id="pronounceResult" class="feedback">⚡ 点击按钮，允许麦克风后朗读</div>
+                <div id="scoreDetail" class="feedback" style="background:#2d3b2f;"></div>
+                <div id="pronounceWrongHint" class="pronounce-wrong-hint hidden">
+                    <button id="pronounceListenBtn" class="audio-btn" style="background:#4c7a8a; padding:6px 16px; font-size:0.8rem;">🔊 听标准发音</button>
+                    <span style="margin-left:10px;">答错了？先听标准发音，再重试</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="meaningPanel" class="hidden">
+            <div class="options-area" id="optionsContainer"></div>
+            <div id="meaningProgress" class="feedback" style="background:#2d4a3a;"></div>
+        </div>
+
+        <button id="nextBtn" class="next-word-btn">➡ 下一词 / 跳过</button>
+        
+        <div class="progress-stats">
+            <span>✅ 已掌握: <span id="masteredStat">0</span></span>
+            <span>🔄 待复习: <span id="reviewStat">0</span></span>
+            <span>❌ 需强化: <span id="weakStat">0</span></span>
+        </div>
+        <div id="globalMsg" class="feedback" style="background:#2d3b2f;"></div>
+    </div>
+
+    <!-- 词义模式错词列表 -->
+    <div id="meaningWrongPanel" class="wrong-words-panel hidden">
+        <div class="wrong-words-title">
+            <span>📋 词义模式 - 需强化的错词列表</span>
+            <button id="copyMeaningWrongBtn" class="copy-btn">📋 复制列表</button>
+        </div>
+        <div id="meaningWrongList" class="wrong-words-list"></div>
+    </div>
+
+    <!-- 发音模式错词列表 -->
+    <div id="pronounceWrongPanel" class="wrong-words-panel hidden">
+        <div class="wrong-words-title">
+            <span>📋 发音模式 - 需强化的错词列表</span>
+            <button id="copyPronounceWrongBtn" class="copy-btn">📋 复制列表</button>
+        </div>
+        <div id="pronounceWrongList" class="wrong-words-list"></div>
+    </div>
+
+    <footer>🔊 专业英音 | 发音/词义模式均为闭环闯关 | 通关后导出错词</footer>
+</div>
+
+<script>
+    // ========== 全局数据 ==========
+    let wordBank = [];
+    
+    // 词义模式数据
+    let meaningWrongRecords = [];
+    let meaningMastered = [];
+    let meaningPendingIndices = [];
+    let meaningCurrentRoundIndex = 0;
+    let meaningRound = 1;
+    let meaningWaitingForNext = false;
+    let meaningCompleted = false;
+    
+    // 发音模式数据
+    let pronounceWrongRecords = [];
+    let pronounceMastered = [];
+    let pronouncePendingIndices = [];
+    let pronounceCurrentRoundIndex = 0;
+    let pronounceRound = 1;
+    let pronounceWaitingForNext = false;
+    let pronounceCompleted = false;
+    let currentPronounceWord = null;
+    
+    // 跟读模式数据
+    let mastered = [];
+    let review = [];
+    let weak = [];
+    let currentIdx = 0;
+    
+    let currentMode = "listen";
+    let currentRecognition = null;
+    let isListening = false;
+    let currentAudio = null;
+    
+    // DOM 元素
+    const wordBankText = document.getElementById('wordBankArea');
+    const syncBtn = document.getElementById('syncBankBtn');
+    const wordCountSpan = document.getElementById('wordCountSpan');
+    const displayWordDiv = document.getElementById('displayWord');
+    const phoneticZone = document.getElementById('phoneticZone');
+    const posZone = document.getElementById('posZone');
+    const meaningZoneDiv = document.getElementById('meaningZone');
+    const listenPanel = document.getElementById('listenAudioPanel');
+    const pronouncePanel = document.getElementById('pronouncePanel');
+    const meaningPanel = document.getElementById('meaningPanel');
+    const nextBtn = document.getElementById('nextBtn');
+    const masteredSpan = document.getElementById('masteredStat');
+    const reviewSpan = document.getElementById('reviewStat');
+    const weakSpan = document.getElementById('weakStat');
+    const globalMsgDiv = document.getElementById('globalMsg');
+    const pronounceResultDiv = document.getElementById('pronounceResult');
+    const scoreDetailDiv = document.getElementById('scoreDetail');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const meaningProgressDiv = document.getElementById('meaningProgress');
+    const audioStatusDiv = document.getElementById('audioStatus');
+    const pronounceWrongHint = document.getElementById('pronounceWrongHint');
+    const pronounceListenBtn = document.getElementById('pronounceListenBtn');
+    const meaningWrongPanel = document.getElementById('meaningWrongPanel');
+    const meaningWrongList = document.getElementById('meaningWrongList');
+    const copyMeaningWrongBtn = document.getElementById('copyMeaningWrongBtn');
+    const pronounceWrongPanel = document.getElementById('pronounceWrongPanel');
+    const pronounceWrongList = document.getElementById('pronounceWrongList');
+    const copyPronounceWrongBtn = document.getElementById('copyPronounceWrongBtn');
+
+    // ========== 辅助函数 ==========
+    function getTodayDate() {
+        const today = new Date();
+        return `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    }
+    
+    function stopCurrentAudio() {
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            currentAudio = null;
+        }
+        const allAudio = document.querySelectorAll('audio');
+        allAudio.forEach(audio => {
+            audio.pause();
+            audio.currentTime = 0;
+        });
+    }
+    
+    // ========== 高质量英音（使用多个备用源） ==========
+    async function speakBritish(word) {
+        if (!word) return;
+        stopCurrentAudio();
+        
+        const btn = document.getElementById('ukVoiceBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = '🔊 加载中...';
+        }
+        if (audioStatusDiv) audioStatusDiv.innerText = '🎧 获取英音...';
+        
+        // 使用多个 TTS 源，自动切换
+        const encodedWord = encodeURIComponent(word);
+        
+        // 源1: Google TTS（音质最好，但部分网络可能受限）
+        const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedWord}&tl=en&client=tw-ob`;
+        // 源2: VoiceRSS（稳定，英音标准）
+        const voiceRssUrl = `https://api.voicerss.org/?key=free&hl=en-gb&c=MP3&f=8khz_8bit_mono&src=${encodedWord}`;
+        
+        let currentSourceIndex = 0;
+        const sources = [
+            { url: googleUrl, name: 'Google TTS' },
+            { url: voiceRssUrl, name: 'VoiceRSS' }
+        ];
+        
+        function tryNextSource() {
+            if (currentSourceIndex >= sources.length) {
+                // 所有在线源都失败，使用系统 TTS 作为最后备用
+                fallbackBritishSpeech(word);
+                return;
+            }
+            const source = sources[currentSourceIndex];
+            if (audioStatusDiv) audioStatusDiv.innerText = `🎧 加载 ${source.name}...`;
+            
+            const audio = new Audio();
+            currentAudio = audio;
+            audio.src = source.url;
+            
+            audio.oncanplaythrough = () => {
+                audio.play().catch(() => {
+                    currentSourceIndex++;
+                    tryNextSource();
+                });
+            };
+            audio.onerror = () => {
+                currentSourceIndex++;
+                tryNextSource();
+            };
+            audio.onended = () => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '🇬🇧 英音跟读';
+                }
+                if (audioStatusDiv) audioStatusDiv.innerText = '✅ 播放完成';
+                if (currentAudio === audio) currentAudio = null;
+            };
+            
+            // 超时处理
+            setTimeout(() => {
+                if (currentAudio === audio && !audio.ended) {
+                    currentSourceIndex++;
+                    tryNextSource();
+                }
+            }, 5000);
+        }
+        
+        tryNextSource();
+    }
+    
+    function fallbackBritishSpeech(word) {
+        const btn = document.getElementById('ukVoiceBtn');
+        if (audioStatusDiv) audioStatusDiv.innerText = '🎤 使用系统英音...';
+        const utterance = new SpeechSynthesisUtterance(word);
+        utterance.lang = 'en-GB';
+        utterance.rate = 0.8;
+        
+        // 尝试选择更好的英音语音
+        const voices = window.speechSynthesis.getVoices();
+        const preferred = voices.find(v => v.lang === 'en-GB' && (v.name.includes('Google') || v.name.includes('Microsoft') || v.name.includes('Samantha')));
+        if (preferred) utterance.voice = preferred;
+        
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+        utterance.onend = () => {
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = '🇬🇧 英音跟读';
+            }
+            if (audioStatusDiv) audioStatusDiv.innerText = '✅ 播放完成';
+        };
+    }
+    
+    // 发音模式专用的听发音按钮
+    function speakBritishForPronounce(word) {
+        if (!word) return;
+        stopCurrentAudio();
+        const encodedWord = encodeURIComponent(word);
+        const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedWord}&tl=en&client=tw-ob`;
+        const audio = new Audio(googleUrl);
+        currentAudio = audio;
+        audio.oncanplaythrough = () => audio.play().catch(() => {
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-GB';
+            utterance.rate = 0.8;
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+        });
+        audio.onerror = () => {
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-GB';
+            utterance.rate = 0.8;
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+        };
+    }
+
+    // ========== 词义模式 ==========
+    function initMeaningMode() {
+        meaningMastered = new Array(wordBank.length).fill(false);
+        meaningWrongRecords = [];
+        meaningPendingIndices = [...Array(wordBank.length).keys()];
+        meaningCurrentRoundIndex = 0;
+        meaningRound = 1;
+        meaningWaitingForNext = false;
+        meaningCompleted = false;
+        meaningWrongPanel.classList.add('hidden');
+        updateMeaningProgressDisplay();
+    }
+    
+    function updateMeaningProgressDisplay() {
+        if (!meaningProgressDiv) return;
+        const total = wordBank.length;
+        const masteredCount = meaningMastered.filter(v=>v===true).length;
+        if (masteredCount === total && !meaningCompleted) {
+            meaningCompleted = true;
+            meaningProgressDiv.innerHTML = `🎉 恭喜！所有 ${total} 个单词词义已完全掌握！ 🎉`;
+            globalMsgDiv.innerHTML = `🎉 词义模式通关！${getTodayDate()}`;
+            showMeaningWrongPanel();
+        } else if (masteredCount === total) {
+            meaningProgressDiv.innerHTML = `🎉 恭喜！所有 ${total} 个单词词义已完全掌握！ 🎉`;
+        } else {
+            meaningProgressDiv.innerHTML = `📊 第 ${meaningRound} 轮 | 本轮剩余 ${meaningPendingIndices.length} 个 | 总进度 ${masteredCount}/${total}`;
+        }
+    }
+    
+    function showMeaningWrongPanel() {
+        if (meaningWrongRecords.length === 0) {
+            meaningWrongPanel.classList.add('hidden');
+            return;
+        }
+        meaningWrongPanel.classList.remove('hidden');
+        const dateStr = getTodayDate();
+        let html = `<div style="font-size:0.7rem; color:#ffcc80; margin-bottom:8px;">📅 ${dateStr}</div>`;
+        meaningWrongRecords.forEach(item => {
+            html += `
+                <div class="wrong-word-item">
+                    <span><strong>${item.word}</strong> - ${item.meaning}</span>
+                    <span style="font-size:0.7rem; color:#ffaa66;">❌ ${item.wrongCount}次</span>
+                </div>
+            `;
+        });
+        meaningWrongList.innerHTML = html;
+        
+        copyMeaningWrongBtn.onclick = () => {
+            let text = `词义模式 - 错词列表 (${dateStr})\n`;
+            text += `共 ${meaningWrongRecords.length} 个单词需强化\n`;
+            text += `━━━━━━━━━━━━━━━━━━━━\n`;
+            meaningWrongRecords.forEach(item => {
+                text += `${item.word} : ${item.meaning} (答错${item.wrongCount}次)\n`;
+            });
+            navigator.clipboard.writeText(text).then(() => {
+                globalMsgDiv.innerHTML = '✅ 词义错词列表已复制！';
+                setTimeout(() => { if (globalMsgDiv.innerHTML === '✅ 词义错词列表已复制！') globalMsgDiv.innerHTML = ''; }, 2000);
+            });
+        };
+    }
+    
+    function recordMeaningWrong(wordIndex, word, meaning) {
+        const existing = meaningWrongRecords.find(r => r.index === wordIndex);
+        if (existing) existing.wrongCount++;
+        else meaningWrongRecords.push({ index: wordIndex, word: word, meaning: meaning, wrongCount: 1 });
+    }
+    
+    function showAnswerFeedback(selectedElement, selectedText, correctText, isCorrect) {
+        const allOptions = document.querySelectorAll('.opt-item');
+        allOptions.forEach(opt => {
+            const optText = (opt.childNodes[0]?.nodeValue || opt.innerText.split('✓')[0].split('✗')[0].trim()).trim();
+            if (optText === correctText) {
+                opt.classList.add('correct-highlight');
+                const existingMark = opt.querySelector('.opt-mark');
+                if (!existingMark) {
+                    const mark = document.createElement('span');
+                    mark.className = 'opt-mark correct';
+                    mark.innerHTML = '✓';
+                    opt.appendChild(mark);
+                }
+            }
+        });
+        if (!isCorrect && selectedElement) {
+            selectedElement.classList.add('wrong-highlight');
+            const existingMark = selectedElement.querySelector('.opt-mark');
+            if (!existingMark) {
+                const mark = document.createElement('span');
+                mark.className = 'opt-mark wrong';
+                mark.innerHTML = '✗';
+                selectedElement.appendChild(mark);
+            }
+        }
+        if (isCorrect && selectedElement) {
+            const existingMark = selectedElement.querySelector('.opt-mark');
+            if (!existingMark) {
+                const mark = document.createElement('span');
+                mark.className = 'opt-mark correct';
+                mark.innerHTML = '✓';
+                selectedElement.appendChild(mark);
+            }
+        }
+    }
+    
+    function renderMeaningModeUI() {
+        if (!wordBank.length) return;
+        if (meaningWaitingForNext) return;
+        
+        const allMastered = meaningMastered.every(v => v === true);
+        if (allMastered) {
+            updateMeaningProgressDisplay();
+            return;
+        }
+        
+        if (meaningCurrentRoundIndex >= meaningPendingIndices.length) {
+            meaningPendingIndices = meaningMastered.map((v,i)=>v?null:i).filter(v=>v!==null);
+            meaningCurrentRoundIndex = 0;
+            meaningRound++;
+            updateMeaningProgressDisplay();
+            globalMsgDiv.innerHTML = `📢 第 ${meaningRound} 轮开始！继续挑战未掌握的单词 💪`;
+        }
+        
+        const itemIdx = meaningPendingIndices[meaningCurrentRoundIndex];
+        const item = wordBank[itemIdx];
+        if (!item) return;
+        
+        displayWordDiv.innerText = item.word;
+        phoneticZone.innerText = item.phonetic;
+        posZone.innerText = item.partOfSpeech;
+        meaningZoneDiv.innerText = "？";
+        meaningZoneDiv.style.background = "#d9c8a0";
+        
+        const correct = item.meaning;
+        let otherMeanings = wordBank.filter(w => w.word !== item.word).map(w => w.meaning);
+        otherMeanings = [...new Set(otherMeanings)];
+        let distactors = otherMeanings.slice(0, 3);
+        while(distactors.length < 3) distactors.push("其他");
+        let options = [correct, ...distactors.slice(0,3)];
+        options = [...new Set(options)].sort(() => 0.5 - Math.random());
+        
+        optionsContainer.innerHTML = "";
+        options.forEach(opt => {
+            const btn = document.createElement('div');
+            btn.className = "opt-item";
+            btn.innerHTML = `<span>${opt}</span>`;
+            btn.onclick = () => {
+                if (meaningWaitingForNext) return;
+                const isCorrect = (opt === correct);
+                showAnswerFeedback(btn, opt, correct, isCorrect);
+                if (isCorrect) {
+                    if (!meaningMastered[itemIdx]) meaningMastered[itemIdx] = true;
+                    updateMeaningProgressDisplay();
+                    meaningCurrentRoundIndex++;
+                    renderMeaningModeUI();
+                } else {
+                    recordMeaningWrong(itemIdx, item.word, correct);
+                    globalMsgDiv.innerHTML = `❌ 错误。「${item.word}」的正确词义是 “${correct}”。点击「下一词」继续～`;
+                    meaningWaitingForNext = true;
+                    document.querySelectorAll('.opt-item').forEach(b => b.style.pointerEvents = 'none');
+                }
+            };
+            optionsContainer.appendChild(btn);
+        });
+    }
+    
+    function meaningManualNext() {
+        if (!meaningWaitingForNext) return;
+        meaningWaitingForNext = false;
+        meaningCurrentRoundIndex++;
+        document.querySelectorAll('.opt-item').forEach(b => {
+            b.style.pointerEvents = 'auto';
+            b.classList.remove('correct-highlight', 'wrong-highlight');
+            const mark = b.querySelector('.opt-mark');
+            if (mark) mark.remove();
+        });
+        renderMeaningModeUI();
+    }
+    
+    // ========== 发音模式 ==========
+    function initPronounceMode() {
+        pronounceMastered = new Array(wordBank.length).fill(false);
+        pronounceWrongRecords = [];
+        pronouncePendingIndices = [...Array(wordBank.length).keys()];
+        pronounceCurrentRoundIndex = 0;
+        pronounceRound = 1;
+        pronounceWaitingForNext = false;
+        pronounceCompleted = false;
+        pronounceWrongPanel.classList.add('hidden');
+        if (pronounceWrongHint) pronounceWrongHint.classList.add('hidden');
+        updatePronounceProgressDisplay();
+    }
+    
+    function updatePronounceProgressDisplay() {
+        const total = wordBank.length;
+        const masteredCount = pronounceMastered.filter(v=>v===true).length;
+        if (masteredCount === total && !pronounceCompleted) {
+            pronounceCompleted = true;
+            globalMsgDiv.innerHTML = `🎉 发音模式通关！${getTodayDate()} 🎉`;
+            showPronounceWrongPanel();
+        }
+        masteredSpan.innerText = masteredCount;
+        weakSpan.innerText = pronounceWrongRecords.length;
+    }
+    
+    function showPronounceWrongPanel() {
+        if (pronounceWrongRecords.length === 0) {
+            pronounceWrongPanel.classList.add('hidden');
+            return;
+        }
+        pronounceWrongPanel.classList.remove('hidden');
+        const dateStr = getTodayDate();
+        let html = `<div style="font-size:0.7rem; color:#ffcc80; margin-bottom:8px;">📅 ${dateStr}</div>`;
+        pronounceWrongRecords.forEach(item => {
+            html += `
+                <div class="wrong-word-item">
+                    <span><strong>${item.word}</strong> - ${item.meaning}</span>
+                    <span style="font-size:0.7rem; color:#ffaa66;">❌ ${item.wrongCount}次</span>
+                </div>
+            `;
+        });
+        pronounceWrongList.innerHTML = html;
+        
+        copyPronounceWrongBtn.onclick = () => {
+            let text = `发音模式 - 错词列表 (${dateStr})\n`;
+            text += `共 ${pronounceWrongRecords.length} 个单词需强化\n`;
+            text += `━━━━━━━━━━━━━━━━━━━━\n`;
+            pronounceWrongRecords.forEach(item => {
+                text += `${item.word} : ${item.meaning} (答错${item.wrongCount}次)\n`;
+            });
+            navigator.clipboard.writeText(text).then(() => {
+                globalMsgDiv.innerHTML = '✅ 发音错词列表已复制！';
+                setTimeout(() => { if (globalMsgDiv.innerHTML === '✅ 发音错词列表已复制！') globalMsgDiv.innerHTML = ''; }, 2000);
+            });
+        };
+    }
+    
+    function recordPronounceWrong(wordIndex, word, meaning) {
+        const existing = pronounceWrongRecords.find(r => r.index === wordIndex);
+        if (existing) existing.wrongCount++;
+        else pronounceWrongRecords.push({ index: wordIndex, word: word, meaning: meaning, wrongCount: 1 });
+        updatePronounceProgressDisplay();
+    }
+    
+    function getCurrentPronounceItem() {
+        if (pronounceCompleted) return null;
+        if (pronounceWaitingForNext) return currentPronounceWord;
+        if (pronounceCurrentRoundIndex >= pronouncePendingIndices.length) {
+            pronouncePendingIndices = pronounceMastered.map((v,i)=>v?null:i).filter(v=>v!==null);
+            pronounceCurrentRoundIndex = 0;
+            pronounceRound++;
+            globalMsgDiv.innerHTML = `📢 发音模式第 ${pronounceRound} 轮开始！继续挑战未掌握的单词 💪`;
+        }
+        if (pronouncePendingIndices.length === 0) return null;
+        const itemIdx = pronouncePendingIndices[pronounceCurrentRoundIndex];
+        currentPronounceWord = wordBank[itemIdx];
+        return currentPronounceWord;
+    }
+    
+    function renderPronounceModeUI() {
+        if (!wordBank.length) return;
+        const item = getCurrentPronounceItem();
+        if (!item) {
+            if (pronounceCompleted) {
+                displayWordDiv.innerText = "🎉 通关啦！";
+                phoneticZone.innerText = "";
+                posZone.innerText = "";
+                meaningZoneDiv.innerText = "";
+            }
+            return;
+        }
+        displayWordDiv.innerText = item.word;
+        phoneticZone.innerText = item.phonetic;
+        posZone.innerText = item.partOfSpeech;
+        meaningZoneDiv.innerText = item.meaning;
+        meaningZoneDiv.style.background = "#e0d6b0";
+        
+        if (pronounceResultDiv) {
+            pronounceResultDiv.innerHTML = '🎙️ 点击按钮开始朗读测试';
+            pronounceResultDiv.style.background = "#1e2a2f";
+        }
+        if (scoreDetailDiv) scoreDetailDiv.innerText = '';
+        if (pronounceWrongHint) pronounceWrongHint.classList.add('hidden');
+    }
+    
+    async function startPronunciationTest() {
+        if (!wordBank.length) {
+            if(pronounceResultDiv) pronounceResultDiv.innerHTML = "⚠️ 请先加载词库";
+            return;
+        }
+        if (pronounceCompleted) {
+            globalMsgDiv.innerHTML = '🎉 发音模式已通关！可切换到其他模式继续学习 🎉';
+            return;
+        }
+        const item = getCurrentPronounceItem();
+        if (!item) return;
+        const target = item.word;
+        const itemIdx = pronouncePendingIndices[pronounceCurrentRoundIndex];
+        
+        const micBtn = document.getElementById('startMicBtn');
+        if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+            if(pronounceResultDiv) pronounceResultDiv.innerHTML = "❌ 浏览器不支持语音识别";
+            return;
+        }
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(t => t.stop());
+        } catch(e) {
+            if(pronounceResultDiv) pronounceResultDiv.innerHTML = "❌ 麦克风权限被拒绝";
+            return;
+        }
+        if (currentRecognition) {
+            try { currentRecognition.abort(); } catch(e) {}
+            currentRecognition = null;
+        }
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRec();
+        currentRecognition = recognition;
+        recognition.lang = 'en-GB';
+        recognition.interimResults = false;
+        
+        micBtn.classList.add('listening');
+        micBtn.textContent = '🎙️ 聆听中...';
+        if(pronounceResultDiv) {
+            pronounceResultDiv.innerHTML = `🎤 请朗读: ${target}`;
+            pronounceResultDiv.style.background = "#e67e22";
+        }
+        isListening = true;
+        
+        recognition.onresult = (ev) => {
+            if (!isListening) return;
+            const spoken = ev.results[0][0].transcript.toLowerCase().trim();
+            const cleanSpoken = spoken.replace(/[^\w]/g, '');
+            const cleanTarget = target.toLowerCase().replace(/[^\w]/g, '');
+            const isMatch = cleanSpoken === cleanTarget || 
+                           (cleanTarget.includes(cleanSpoken) && cleanSpoken.length > 2) ||
+                           (cleanSpoken.includes(cleanTarget));
+            
+            if (pronounceResultDiv) {
+                pronounceResultDiv.style.background = isMatch ? "#2e7d32" : "#c62828";
+                pronounceResultDiv.innerHTML = isMatch ? `✅ 发音准确！` : `❌ 识别: "${spoken}" ≠ "${target}"`;
+            }
+            if (isMatch) {
+                if (!pronounceMastered[itemIdx]) pronounceMastered[itemIdx] = true;
+                updatePronounceProgressDisplay();
+                globalMsgDiv.innerHTML = `✅ 发音正确！自动进入下一词 💪`;
+                pronounceCurrentRoundIndex++;
+                pronounceWaitingForNext = false;
+                if (pronounceWrongHint) pronounceWrongHint.classList.add('hidden');
+                renderPronounceModeUI();
+            } else {
+                recordPronounceWrong(itemIdx, item.word, item.meaning);
+                globalMsgDiv.innerHTML = `❌ 发音需加强。点击下方「听标准发音」后重试，再点「下一词」继续`;
+                pronounceWaitingForNext = true;
+                if (pronounceWrongHint) pronounceWrongHint.classList.remove('hidden');
+                if (pronounceListenBtn) {
+                    pronounceListenBtn.onclick = () => { speakBritishForPronounce(target); };
+                }
+            }
+            updatePronounceProgressDisplay();
+            try { recognition.stop(); } catch(e) {}
+            micBtn.classList.remove('listening');
+            micBtn.textContent = '🎙️ 朗读测试发音';
+            isListening = false;
+            currentRecognition = null;
+        };
+        recognition.onerror = (e) => {
+            if(pronounceResultDiv) pronounceResultDiv.innerHTML = `❌ 识别错误: ${e.error}`;
+            micBtn.classList.remove('listening');
+            micBtn.textContent = '🎙️ 朗读测试发音';
+            isListening = false;
+            currentRecognition = null;
+        };
+        recognition.onend = () => {
+            if (isListening) {
+                if(pronounceResultDiv) pronounceResultDiv.innerHTML = `⚠️ 未检测到语音，请重试`;
+                micBtn.classList.remove('listening');
+                micBtn.textContent = '🎙️ 朗读测试发音';
+                isListening = false;
+                currentRecognition = null;
+            }
+        };
+        recognition.start();
+    }
+    
+    function pronounceManualNext() {
+        if (!pronounceWaitingForNext) {
+            if (!pronounceCompleted && pronounceCurrentRoundIndex < pronouncePendingIndices.length) {
+                pronounceCurrentRoundIndex++;
+                renderPronounceModeUI();
+            }
+            return;
+        }
+        pronounceWaitingForNext = false;
+        pronounceCurrentRoundIndex++;
+        if (pronounceWrongHint) pronounceWrongHint.classList.add('hidden');
+        renderPronounceModeUI();
+    }
+    
+    // ========== 词库解析 ==========
+    function parseWordBankFromInput(rawText) {
+        const lines = rawText.split(/\r?\n/);
+        const result = [];
+        for (let line of lines) {
+            line = line.trim();
+            if (line === "") continue;
+            const phoneticMatch = line.match(/(\/[^\/]+\/)/);
+            if (!phoneticMatch) continue;
+            const phonetic = phoneticMatch[0];
+            const phoneticIndex = line.indexOf(phonetic);
+            const wordPart = line.substring(0, phoneticIndex).trim();
+            const afterPart = line.substring(phoneticIndex + phonetic.length).trim();
+            const afterParts = afterPart.split(/\s+/);
+            let partOfSpeech = afterParts[0] || "";
+            let meaning = afterParts.slice(1).join(" ");
+            if (wordPart && phonetic && meaning) {
+                result.push({ word: wordPart, phonetic: phonetic, partOfSpeech: partOfSpeech, meaning: meaning });
+            }
+        }
+        return result;
+    }
+    
+    function loadWordBankFromInput() {
+        const raw = wordBankText.value;
+        const newBank = parseWordBankFromInput(raw);
+        if (newBank.length === 0) {
+            const defaultText = `analyze /'ænəlaɪz/ v. 分析
+pick up /pɪk ʌp/ v. 捡起；学会
+look forward to /lʊk 'fɔːwəd tuː/ v. 期待
+take care of /teɪk keər əv/ v. 照顾
+significant /sɪɡ'nɪfɪkənt/ adj. 重要的
+environment /ɪn'vaɪrənmənt/ n. 环境`;
+            wordBankText.value = defaultText;
+            wordBank = parseWordBankFromInput(defaultText);
+        } else {
+            wordBank = newBank;
+        }
+        wordCountSpan.innerText = `📚 ${wordBank.length}词`;
+        
+        mastered = new Array(wordBank.length).fill(false);
+        review = new Array(wordBank.length).fill(false);
+        weak = new Array(wordBank.length).fill(false);
+        currentIdx = 0;
+        
+        initMeaningMode();
+        initPronounceMode();
+        
+        if (currentMode === 'meaning') {
+            renderMeaningModeUI();
+        } else if (currentMode === 'pronounce') {
+            renderPronounceModeUI();
+        } else {
+            refreshNormalMode();
+        }
+        
+        // 确保跟读模式面板可见
+        if (currentMode === 'listen') {
+            listenPanel.classList.remove('hidden');
+            pronouncePanel.classList.add('hidden');
+            meaningPanel.classList.add('hidden');
+        }
+        
+        globalMsgDiv.innerHTML = "✅ 词库已加载 | 发音/词义模式均为闭环闯关";
+    }
+    
+    // ========== 跟读模式 ==========
+    function refreshNormalMode() {
+        if (!wordBank.length) {
+            displayWordDiv.innerText = "📭 无词库";
+            phoneticZone.innerText = "";
+            posZone.innerText = "";
+            meaningZoneDiv.innerText = "";
+            return;
+        }
+        const item = wordBank[currentIdx];
+        displayWordDiv.innerText = item.word;
+        phoneticZone.innerText = item.phonetic;
+        posZone.innerText = item.partOfSpeech;
+        meaningZoneDiv.innerText = item.meaning;
+        meaningZoneDiv.style.background = "#e0d6b0";
+        
+        const ukBtn = document.getElementById('ukVoiceBtn');
+        if (ukBtn) {
+            ukBtn.disabled = false;
+            ukBtn.textContent = '🇬🇧 英音跟读';
+        }
+        if (audioStatusDiv) audioStatusDiv.innerText = '';
+    }
+    
+    function refreshByMode() {
+        if (currentMode === 'meaning') {
+            meaningPanel.classList.remove('hidden');
+            listenPanel.classList.add('hidden');
+            pronouncePanel.classList.add('hidden');
+            renderMeaningModeUI();
+            globalMsgDiv.innerHTML = "📖 词义模式：答对自动跳转，答错需手动点击「下一词」";
+        } else if (currentMode === 'pronounce') {
+            meaningPanel.classList.add('hidden');
+            listenPanel.classList.add('hidden');
+            pronouncePanel.classList.remove('hidden');
+            renderPronounceModeUI();
+            globalMsgDiv.innerHTML = "🎙️ 发音模式：答对自动跳转，答错可听标准发音后重试";
+        } else {
+            meaningPanel.classList.add('hidden');
+            pronouncePanel.classList.add('hidden');
+            listenPanel.classList.remove('hidden');
+            refreshNormalMode();
+            globalMsgDiv.innerHTML = "🎧 跟读模式：点击「英音跟读」听标准发音后模仿";
+        }
+    }
+    
+    function nextWord() {
+        stopCurrentAudio();
+        if (currentRecognition) {
+            try { currentRecognition.abort(); } catch(e) {}
+            currentRecognition = null;
+            isListening = false;
+        }
+        if (!wordBank.length) return;
+        
+        if (currentMode === 'meaning') {
+            if (meaningWaitingForNext) meaningManualNext();
+            else if (!meaningMastered.every(v=>v===true)) {
+                meaningCurrentRoundIndex++;
+                renderMeaningModeUI();
+            }
+        } else if (currentMode === 'pronounce') {
+            if (pronounceWaitingForNext) pronounceManualNext();
+            else if (!pronounceCompleted) {
+                pronounceCurrentRoundIndex++;
+                renderPronounceModeUI();
+            }
+        } else {
+            if (currentIdx + 1 < wordBank.length) {
+                currentIdx++;
+                refreshNormalMode();
+            } else {
+                globalMsgDiv.innerHTML = `🏆 跟读模式完成一轮 🎉 可继续循环练习`;
+                currentIdx = 0;
+                refreshNormalMode();
+            }
+        }
+    }
+    
+    function setMode(mode) {
+        stopCurrentAudio();
+        if (currentRecognition) {
+            try { currentRecognition.abort(); } catch(e) {}
+            currentRecognition = null;
+            isListening = false;
+        }
+        currentMode = mode;
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            if(btn.dataset.mode === mode) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+        if(wordBank.length) refreshByMode();
+    }
+    
+    // ========== 事件绑定 ==========
+    syncBtn.addEventListener('click', loadWordBankFromInput);
+    nextBtn.addEventListener('click', nextWord);
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.addEventListener('click', (e) => setMode(e.target.dataset.mode)));
+    
+    const ukBtn = document.getElementById('ukVoiceBtn');
+    if (ukBtn) {
+        ukBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (wordBank[currentIdx]) speakBritish(wordBank[currentIdx].word);
+        });
+    }
+    
+    const startMicBtn = document.getElementById('startMicBtn');
+    if (startMicBtn) startMicBtn.addEventListener('click', startPronunciationTest);
+    
+    window.addEventListener('beforeunload', () => {
+        stopCurrentAudio();
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+    });
+    
+    if (window.speechSynthesis) window.speechSynthesis.getVoices();
+    
+    const defaultText = `analyze /'ænəlaɪz/ v. 分析
+pick up /pɪk ʌp/ v. 捡起；学会
+look forward to /lʊk 'fɔːwəd tuː/ v. 期待
+take care of /teɪk keər əv/ v. 照顾
+significant /sɪɡ'nɪfɪkənt/ adj. 重要的
+environment /ɪn'vaɪrənmənt/ n. 环境`;
+    wordBankText.value = defaultText;
+    loadWordBankFromInput();
+</script>
+</body>
+</html>
